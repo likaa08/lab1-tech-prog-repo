@@ -1,8 +1,8 @@
+using Lab3.Defense;
 namespace Lab3.Combat;
 
 // всё, что может участвовать в бою: и герой, и враги
-public interface ICombatant
-{
+public interface ICombatant {
     // код вида сущности: класс героя или тип врага
     string Code { get; }
 
@@ -18,5 +18,5 @@ public interface ICombatant
     Hit RollDamage();
 
     // получение удара, возвращает урон, который прошел на самом деле
-    int ReceiveHit(int damage);
+    Damage ReceiveHit(int damage);
 }

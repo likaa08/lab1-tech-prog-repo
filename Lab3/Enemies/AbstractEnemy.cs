@@ -1,20 +1,18 @@
+using Lab3.Defense;
 using Lab3.Combat;
 using Lab3.Core;
 
 namespace Lab3.Enemies;
 
 // общая логика для врагов: здоровье, урон в диапазоне, награда
-public abstract class AbstractEnemy : IEnemy
-{
+public abstract class AbstractEnemy : IEnemy {
     private readonly int minDamage;
     private readonly int maxDamage;
     private readonly int goldReward;
+    private readonly DamageHandler? defense;
 
-    protected AbstractEnemy(
-        string code, string name, int maxHealth,
-        int minDamage, int maxDamage,
-        int experienceReward, int goldReward)
-    {
+    protected AbstractEnemy(string code, string name, int maxHealth, int minDamage, int maxDamage,
+        int experienceReward, int goldReward, DamageHandler? defense = null) {
         Code = code;
         Name = name;
         MaxHealth = maxHealth;
@@ -23,6 +21,7 @@ public abstract class AbstractEnemy : IEnemy
         this.minDamage = minDamage;
         this.maxDamage = maxDamage;
         this.goldReward = goldReward;
+        this.defense = defense;
     }
 
     public string Code { get; }
@@ -38,26 +37,18 @@ public abstract class AbstractEnemy : IEnemy
     public int ExperienceReward { get; }
 
     // virtual - наследники могут переопределить этот метод
-    public virtual Hit RollDamage()
-    {
+    public virtual Hit RollDamage() {
         return new Hit(Dice.Instance.Roll(minDamage, maxDamage), false);
     }
 
-    public int ReceiveHit(int damage)
-    {
-        int dealt = Math.Max(1, ReduceDamage(damage));
-        Health = Math.Max(0, Health - dealt);
-        return dealt;
-    }
-
-    public int RollGoldReward()
-    {
-        return Dice.Instance.Roll(goldReward / 2, goldReward);
-    }
-
-    // наследники могут уменьшать входящий урон
-    protected virtual int ReduceDamage(int damage)
-    {
+    public Damage ReceiveHit(int amount) {
+        Damage damage = new(amount);
+        defense?.Handle(damage);
+        Health = Math.Max(0, Health - damage.Amount);
         return damage;
+    }
+
+    public int RollGoldReward() {
+        return Dice.Instance.Roll(goldReward / 2, goldReward);
     }
 }
